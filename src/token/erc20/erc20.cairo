@@ -1,55 +1,58 @@
 use starknet::ContractAddress;
 
 #[abi]
-trait IERC20 {
+trait IERC20ABI {
     // case agnostic view functions
-    #[view]
+    // #[view]
     fn name() -> felt252;
-    #[view]
+    // #[view]
     fn symbol() -> felt252;
-    #[view]
+    // #[view]
     fn decimals() -> u8;
-    #[view]
+    // #[view]
     fn allowance(owner: ContractAddress, spender: ContractAddress) -> u256;
 
     // snake_case view functions
-    #[view]
+    // #[view]
     fn total_supply() -> u256;
-    #[view]
+    // #[view]
     fn balance_of(account: ContractAddress) -> u256;
 
     // camelCase view functions
-    #[view]
+    // #[view]
     fn totalSupply() -> u256;
-    #[view]
+    // #[view]
     fn balanceOf(account: ContractAddress) -> u256;
 
     // case agnostic external functions
-    #[external]
+    // #[external]
     fn transfer(recipient: ContractAddress, amount: u256) -> bool;
-    #[external]
+    // #[external]
     fn approve(spender: ContractAddress, amount: u256) -> bool;
 
     // snake_case external functions
-    #[external]
+    // #[external]
     fn transfer_from(sender: ContractAddress, recipient: ContractAddress, amount: u256) -> bool;
-    #[external]
+    // #[external]
     fn increase_allowance(spender: ContractAddress, added_value: u256) -> bool;
-    #[external]
+    // #[external]
     fn decrease_allowance(spender: ContractAddress, subtracted_value: u256) -> bool;
 
     // camelCase external functions
-    #[external]
+    // #[external]
     fn transferFrom(sender: ContractAddress, recipient: ContractAddress, amount: u256) -> bool;
-    #[external]
+    // #[external]
     fn increaseAllowance(spender: ContractAddress, added_value: u256) -> bool;
-    #[external]
+    // #[external]
     fn decreaseAllowance(spender: ContractAddress, subtracted_value: u256) -> bool;
+    // TODO! -> Confirm that #[view] and #[external] are not mandatory in ABIs,
+    // TODO! -> and, if so, delete the commented lines.
+    // (I think it's only useful/relevant inside Impl of Traits)
 }
 
 #[contract]
 mod ERC20 {
-    use super::IERC20;
+    use openzeppelin::token::erc20;
     use integer::BoundedInt;
     use starknet::ContractAddress;
     use starknet::get_caller_address;
@@ -69,7 +72,15 @@ mod ERC20 {
     #[event]
     fn Approval(owner: ContractAddress, spender: ContractAddress, value: u256) {}
 
-    impl ERC20 of IERC20 {
+    #[constructor]
+    fn constructor(
+        name: felt252, symbol: felt252, initial_supply: u256, recipient: ContractAddress
+    ) {
+        initializer(name, symbol);
+        _mint(recipient, initial_supply);
+    }
+
+    impl ERC20Impl of erc20::interface::IERC20 {
         fn name() -> felt252 {
             _name::read()
         }
@@ -122,14 +133,6 @@ mod ERC20 {
         fn decrease_allowance(spender: ContractAddress, subtracted_value: u256) -> bool {
             _decrease_allowance(spender, subtracted_value)
         }
-    }
-
-    #[constructor]
-    fn constructor(
-        name: felt252, symbol: felt252, initial_supply: u256, recipient: ContractAddress
-    ) {
-        initializer(name, symbol);
-        _mint(recipient, initial_supply);
     }
 
     #[view]
