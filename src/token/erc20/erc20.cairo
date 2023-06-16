@@ -135,64 +135,138 @@ mod ERC20 {
         }
     }
 
+    impl ERC20CamelImpl of erc20::interface::IERC20Camel {
+        fn name() -> felt252 {
+            ERC721Impl::name()
+        }
+
+        fn symbol() -> felt252 {
+            ERC721Impl::symbol()
+        }
+
+        fn decimals() -> u8 {
+            ERC721Impl::decimals()
+        }
+
+        fn totalSupply() -> u256 {
+            ERC721Impl::total_supply()
+        }
+
+        fn balanceOf(account: ContractAddress) -> u256 {
+            ERC721Impl::balance_of(account)
+        }
+
+        fn allowance(owner: ContractAddress, spender: ContractAddress) -> u256 {
+            ERC721Impl::allowance(owner, spender)
+        }
+
+        fn transfer(recipient: ContractAddress, amount: u256) -> bool {
+            ERC721Impl::transfer(recipient, amount)
+        }
+
+        fn transferFrom(sender: ContractAddress, recipient: ContractAddress, amount: u256) -> bool {
+            ERC721Impl::transfer_from(sender, recipient, amount)
+        }
+
+        fn approve(spender: ContractAddress, amount: u256) -> bool {
+            ERC721Impl::approve(spender, amount)
+        }
+
+        fn increaseAllowance(spender: ContractAddress, added_value: u256) -> bool {
+            ERC721Impl::increase_allowance(spender, added_value)
+        }
+
+        fn decreaseAllowance(spender: ContractAddress, subtracted_value: u256) -> bool {
+            ERC721Impl::decrease_allowance(spender, subtracted_value)
+        }
+    }
+
+
+    // View
+
+
     #[view]
     fn name() -> felt252 {
-        ERC20::name()
+        ERC20Impl::name()
     }
 
     #[view]
     fn symbol() -> felt252 {
-        ERC20::symbol()
+        ERC20Impl::symbol()
     }
 
     #[view]
     fn decimals() -> u8 {
-        ERC20::decimals()
+        ERC20Impl::decimals()
     }
 
     #[view]
     fn total_supply() -> u256 {
-        ERC20::total_supply()
+        ERC20Impl::total_supply()
+    }
+    #[view]
+    fn totalSupply() -> u256 {
+        ERC20CamelImpl::total_supply()
     }
 
     #[view]
     fn balance_of(account: ContractAddress) -> u256 {
-        ERC20::balance_of(account)
+        ERC20Impl::balance_of(account)
+    }
+    #[view]
+    fn balanceOf(account: ContractAddress) -> u256 {
+        ERC20CamelImpl::balance_of(account)
     }
 
     #[view]
     fn allowance(owner: ContractAddress, spender: ContractAddress) -> u256 {
-        ERC20::allowance(owner, spender)
+        ERC20Impl::allowance(owner, spender)
     }
+
+
+    // External
+
 
     #[external]
     fn transfer(recipient: ContractAddress, amount: u256) -> bool {
-        ERC20::transfer(recipient, amount)
+        ERC20Impl::transfer(recipient, amount)
     }
 
     #[external]
     fn transfer_from(sender: ContractAddress, recipient: ContractAddress, amount: u256) -> bool {
-        ERC20::transfer_from(sender, recipient, amount)
+        ERC20Impl::transfer_from(sender, recipient, amount)
+    }
+    #[external]
+    fn transferFrom(sender: ContractAddress, recipient: ContractAddress, amount: u256) -> bool {
+        ERC20CamelImpl::transfer_from(sender, recipient, amount)
     }
 
     #[external]
     fn approve(spender: ContractAddress, amount: u256) -> bool {
-        ERC20::approve(spender, amount)
+        ERC20Impl::approve(spender, amount)
     }
 
     #[external]
     fn increase_allowance(spender: ContractAddress, added_value: u256) -> bool {
-        ERC20::increase_allowance(spender, added_value)
+        ERC20Impl::increase_allowance(spender, added_value)
+    }
+    #[external]
+    fn increaseAllowance(spender: ContractAddress, added_value: u256) -> bool {
+        ERC20CamelImpl::increase_allowance(spender, added_value)
     }
 
     #[external]
     fn decrease_allowance(spender: ContractAddress, subtracted_value: u256) -> bool {
-        ERC20::decrease_allowance(spender, subtracted_value)
+        ERC20Impl::decrease_allowance(spender, subtracted_value)
+    }
+    #[external]
+    fn decreaseAllowance(spender: ContractAddress, subtracted_value: u256) -> bool {
+        ERC20CamelImpl::decrease_allowance(spender, subtracted_value)
     }
 
-    ///
-    /// Internals
-    ///
+
+    // Internals
+
 
     #[internal]
     fn initializer(name_: felt252, symbol_: felt252) {
