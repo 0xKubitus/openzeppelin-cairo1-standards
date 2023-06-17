@@ -16,9 +16,9 @@ use openzeppelin::account::QUERY_VERSION;
 use openzeppelin::account::TRANSACTION_VERSION;
 use openzeppelin::introspection::erc165::IERC165_ID;
 use openzeppelin::tests::utils;
-use openzeppelin::token::erc20::ERC20;
-use openzeppelin::token::erc20::IERC20Dispatcher;
-use openzeppelin::token::erc20::IERC20DispatcherTrait;
+use openzeppelin::token::erc20::erc20::ERC20;
+use openzeppelin::token::erc20::interface::IERC20Dispatcher;
+use openzeppelin::token::erc20::interface::IERC20DispatcherTrait;
 
 const PUBLIC_KEY: felt252 = 0x333333;
 const NEW_PUBKEY: felt252 = 0x789789;
