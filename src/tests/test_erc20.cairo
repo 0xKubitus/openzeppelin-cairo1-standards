@@ -196,6 +196,8 @@ fn test__transfer_to_zero() {
     ERC20::_transfer(sender, recipient, amount);
 }
 
+////////////////////////////////////////////////////////////
+
 #[test]
 #[available_gas(2000000)]
 fn test_transfer_from() {
@@ -292,6 +294,102 @@ fn test_transfer_from_from_zero_address() {
 
 #[test]
 #[available_gas(2000000)]
+fn test_transferFrom() {
+    let (owner, supply) = setup();
+
+    let recipient: ContractAddress = contract_address_const::<2>();
+    let spender: ContractAddress = contract_address_const::<3>();
+    let amount: u256 = u256_from_felt252(100);
+
+    ERC20::approve(spender, amount);
+
+    set_caller_address(spender);
+
+    let success: bool = ERC20::transferFrom(owner, recipient, amount);
+    assert(success, 'Should return true');
+
+    // Will dangle without setting as a var
+    let spender_allowance: u256 = ERC20::allowance(owner, spender);
+
+    assert(ERC20::balance_of(recipient) == amount, 'Should eq amount');
+    assert(ERC20::balance_of(owner) == supply - amount, 'Should eq suppy - amount');
+    assert(spender_allowance == u256_from_felt252(0), 'Should eq 0');
+    assert(ERC20::total_supply() == supply, 'Total supply should not change');
+}
+
+#[test]
+#[available_gas(2000000)]
+fn test_transferFrom_doesnt_consume_infinite_allowance() {
+    let (owner, supply) = setup();
+
+    let recipient: ContractAddress = contract_address_const::<2>();
+    let spender: ContractAddress = contract_address_const::<3>();
+    let amount: u256 = u256_from_felt252(100);
+
+    ERC20::approve(spender, BoundedInt::max());
+
+    set_caller_address(spender);
+    ERC20::transferFrom(owner, recipient, amount);
+
+    let spender_allowance: u256 = ERC20::allowance(owner, spender);
+    assert(spender_allowance == BoundedInt::max(), 'Allowance should not change');
+}
+
+#[test]
+#[available_gas(2000000)]
+#[should_panic(expected: ('u256_sub Overflow', ))]
+fn test_transferFrom_greater_than_allowance() {
+    let (owner, supply) = setup();
+
+    let recipient: ContractAddress = contract_address_const::<2>();
+    let spender: ContractAddress = contract_address_const::<3>();
+    let amount: u256 = u256_from_felt252(100);
+    let amount_plus_one: u256 = amount + u256_from_felt252(1);
+
+    ERC20::approve(spender, amount);
+
+    set_caller_address(spender);
+
+    ERC20::transferFrom(owner, recipient, amount_plus_one);
+}
+
+#[test]
+#[available_gas(2000000)]
+#[should_panic(expected: ('ERC20: transfer to 0', ))]
+fn test_transferFrom_to_zero_address() {
+    let (owner, supply) = setup();
+
+    let recipient: ContractAddress = contract_address_const::<0>();
+    let spender: ContractAddress = contract_address_const::<3>();
+    let amount: u256 = u256_from_felt252(100);
+
+    ERC20::approve(spender, amount);
+
+    set_caller_address(spender);
+
+    ERC20::transferFrom(owner, recipient, amount);
+}
+
+#[test]
+#[available_gas(2000000)]
+#[should_panic(expected: ('u256_sub Overflow', ))]
+fn test_transferFrom_from_zero_address() {
+    let (owner, supply) = setup();
+
+    let zero_address: ContractAddress = contract_address_const::<0>();
+    let recipient: ContractAddress = contract_address_const::<2>();
+    let spender: ContractAddress = contract_address_const::<3>();
+    let amount: u256 = u256_from_felt252(100);
+
+    set_caller_address(zero_address);
+
+    ERC20::transferFrom(owner, recipient, amount);
+}
+
+////////////////////////////////////////////////////////////
+
+#[test]
+#[available_gas(2000000)]
 fn test_increase_allowance() {
     let (owner, supply) = setup();
 
@@ -335,6 +433,51 @@ fn test_increase_allowance_from_zero_address() {
 
 #[test]
 #[available_gas(2000000)]
+fn test_increaseAllowance() {
+    let (owner, supply) = setup();
+
+    let spender: ContractAddress = contract_address_const::<2>();
+    let amount: u256 = u256_from_felt252(100);
+
+    ERC20::approve(spender, amount);
+    let success: bool = ERC20::increaseAllowance(spender, amount);
+    assert(success, 'Should return true');
+
+    let spender_allowance: u256 = ERC20::allowance(owner, spender);
+    assert(spender_allowance == amount + amount, 'Should be amount * 2');
+}
+
+#[test]
+#[available_gas(2000000)]
+#[should_panic(expected: ('ERC20: approve to 0', ))]
+fn test_increaseAllowance_to_zero_address() {
+    let (owner, supply) = setup();
+
+    let spender: ContractAddress = contract_address_const::<0>();
+    let amount: u256 = u256_from_felt252(100);
+
+    ERC20::increaseAllowance(spender, amount);
+}
+
+#[test]
+#[available_gas(2000000)]
+#[should_panic(expected: ('ERC20: approve from 0', ))]
+fn test_increaseAllowance_from_zero_address() {
+    let (owner, supply) = setup();
+
+    let zero_address: ContractAddress = contract_address_const::<0>();
+    let spender: ContractAddress = contract_address_const::<2>();
+    let amount: u256 = u256_from_felt252(100);
+
+    set_caller_address(zero_address);
+
+    ERC20::increaseAllowance(spender, amount);
+}
+
+////////////////////////////////
+
+#[test]
+#[available_gas(2000000)]
 fn test_decrease_allowance() {
     let (owner, supply) = setup();
 
@@ -375,6 +518,51 @@ fn test_decrease_allowance_from_zero_address() {
 
     ERC20::decrease_allowance(spender, amount);
 }
+
+#[test]
+#[available_gas(2000000)]
+fn test_decreaseAllowance() {
+    let (owner, supply) = setup();
+
+    let spender: ContractAddress = contract_address_const::<2>();
+    let amount: u256 = u256_from_felt252(100);
+
+    ERC20::approve(spender, amount);
+    let success: bool = ERC20::decreaseAllowance(spender, amount);
+    assert(success, 'Should return true');
+
+    let spender_allowance: u256 = ERC20::allowance(owner, spender);
+    assert(spender_allowance == amount - amount, 'Should be 0');
+}
+
+#[test]
+#[available_gas(2000000)]
+#[should_panic(expected: ('u256_sub Overflow', ))]
+fn test_decreaseAllowance_to_zero_address() {
+    let (owner, supply) = setup();
+
+    let spender: ContractAddress = contract_address_const::<0>();
+    let amount: u256 = u256_from_felt252(100);
+
+    ERC20::decreaseAllowance(spender, amount);
+}
+
+#[test]
+#[available_gas(2000000)]
+#[should_panic(expected: ('u256_sub Overflow', ))]
+fn test_decreaseAllowance_from_zero_address() {
+    let (owner, supply) = setup();
+
+    let zero_address: ContractAddress = contract_address_const::<0>();
+    let spender: ContractAddress = contract_address_const::<2>();
+    let amount: u256 = u256_from_felt252(100);
+
+    set_caller_address(zero_address);
+
+    ERC20::decreaseAllowance(spender, amount);
+}
+
+////////////////////////////////
 
 #[test]
 #[available_gas(2000000)]
