@@ -1,2 +1,2 @@
 [crate_roots]
-openzeppelin = "./src"
+openzeppelin = "src"
